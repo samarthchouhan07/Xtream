@@ -61,5 +61,3 @@ export const UserAvatar = ({
 export const UserAvatarSkeleton = ({ size }: VariantProps<typeof avatarSizes>) => {
   return <Skeleton className={cn("rounded-full ", avatarSizes({ size }))} />;
 };
-
-
