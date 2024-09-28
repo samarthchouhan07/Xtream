@@ -57,13 +57,33 @@ export async function POST(req: Request) {
   //   console.log(`Webhook with and ID of ${id} and type of ${eventType}`)
   //   console.log('Webhook body:', body)
   if (eventType === "user.created") {
-    await db.user.create({
-      data: {
-        externalUserId: payload.data.id,
-        username: payload.data.username,
-        imageUrl: payload.data.image_url,
-      },
+    const existingUser = await db.user.findUnique({
+      where: { externalUserId: payload.data.id },
+      include: { stream: true },
     });
+    
+    if (existingUser?.stream) {
+      console.error("Stream already exists for this user.");
+    } else {
+      try {
+        await db.user.create({
+          data: {
+            externalUserId: payload.data.id,
+            username: payload.data.username,
+            imageUrl: payload.data.image_url,
+            stream: {
+              create: {
+                name: `${payload.data.username}'s stream`,
+              },
+            },
+          },
+        });
+      } catch (error) {
+        console.error("Error creating user and stream:", error);
+      }
+    }
+    
+    
   }
   if (eventType === "user.updated") {
     await db.user.update({
